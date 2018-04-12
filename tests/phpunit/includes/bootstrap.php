@@ -10,14 +10,16 @@ if ( class_exists( 'PHPUnit\Runner\Version' ) ) {
 	require_once dirname( __FILE__ ) . '/phpunit6-compat.php';
 }
 
-$config_file_path = dirname( dirname( __FILE__ ) );
-if ( ! file_exists( $config_file_path . '/wp-tests-config.php' ) ) {
-	// Support the config file from the root of the develop repository.
-	if ( basename( $config_file_path ) === 'phpunit' && basename( dirname( $config_file_path ) ) === 'tests' ) {
-		$config_file_path = dirname( dirname( $config_file_path ) );
-	}
+if ( !defined( 'WP_CONFIG_FILE_PATH' ) ) {
+    $config_file_path = dirname( dirname( __FILE__ ) );
+    if ( ! file_exists( $config_file_path . '/wp-tests-config.php' ) ) {
+        // Support the config file from the root of the develop repository.
+        if ( basename( $config_file_path ) === 'phpunit' && basename( dirname( $config_file_path ) ) === 'tests' ) {
+            $config_file_path = dirname( dirname( $config_file_path ) );
+        }
+    }
+    define( 'WP_CONFIG_FILE_PATH', $config_file_path . '/wp-tests-config.php' );
 }
-$config_file_path .= '/wp-tests-config.php';
 
 /*
  * Globalize some WordPress variables, because PHPUnit loads this file inside a function
@@ -25,11 +27,11 @@ $config_file_path .= '/wp-tests-config.php';
  */
 global $wpdb, $current_site, $current_blog, $wp_rewrite, $shortcode_tags, $wp, $phpmailer, $wp_theme_directories;
 
-if ( ! is_readable( $config_file_path ) ) {
+if ( ! is_readable( WP_CONFIG_FILE_PATH ) ) {
 	echo "ERROR: wp-tests-config.php is missing! Please use wp-tests-config-sample.php to create a config file.\n";
 	exit( 1 );
 }
-require_once $config_file_path;
+require_once WP_CONFIG_FILE_PATH;
 require_once dirname( __FILE__ ) . '/functions.php';
 
 tests_reset__SERVER();
@@ -68,7 +70,7 @@ if ( ! defined( 'WP_DEFAULT_THEME' ) ) {
 }
 $wp_theme_directories = array( DIR_TESTDATA . '/themedir1' );
 
-system( WP_PHP_BINARY . ' ' . escapeshellarg( dirname( __FILE__ ) . '/install.php' ) . ' ' . escapeshellarg( $config_file_path ) . ' ' . $multisite, $retval );
+system( WP_PHP_BINARY . ' ' . escapeshellarg( dirname( __FILE__ ) . '/install.php' ) . ' ' . escapeshellarg( WP_CONFIG_FILE_PATH ) . ' ' . $multisite, $retval );
 if ( 0 !== $retval ) {
 	exit( $retval );
 }
